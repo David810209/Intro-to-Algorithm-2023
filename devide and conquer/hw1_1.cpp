@@ -1,120 +1,55 @@
 #include <bits/stdc++.h>
-
 using namespace std;
-typedef vector<int> vi;
-#define endl '\n'
-#define all(x) x.begin(), x.end()
-
-const int N = 2e5 + 5;
-
-int arr[N];
-
-struct Node
+int max(const int &a, const int &b, const int &c)
 {
-    vi five;
-} seg[N << 2];
-
-void maintain(const int &node, const int &l, const int &r)
-{
-    int m = (l + r) / 2;
-    int left_node = node * 2 + 1;
-    int right_node = node * 2 + 2;
-    vi a, b;
-    if (left_node < (N << 2))
-        a = seg[left_node].five;
-    if (right_node < (N << 2))
-        b = seg[right_node].five;
-    seg[node].five.resize(a.size() + b.size());
-    merge(all(a), all(b), seg[node].five.begin());
-    seg[node].five.resize(min((int)seg[node].five.size(), 5));
+    return max(a, max(b, c));
 }
 
-vi qry(const int &node, const int &l, const int &r, const int &qry_l, const int &qry_r)
+int maxCrossingSum(vector<int> &arr, int l, int m, int r)
 {
-    if (qry_l > r || qry_r < l)
+    int sum = 0;
+    int left_sum = INT_MIN;
+    for (int i = m; i >= l; i--)
     {
-        return {};
+        sum += arr[i];
+        left_sum = max(sum, left_sum);
     }
-    else if (l == r)
+
+    sum = 0;
+    int right_sum = INT_MIN;
+    for (int i = m; i <= r; i++)
     {
-        return seg[node].five;
+        sum += arr[i];
+        right_sum = max(sum, right_sum);
     }
-    else if (qry_l <= l && r <= qry_r)
-    {
-        return seg[node].five;
-    }
-    int m = (l + r) / 2;
-    int left_node = node * 2 + 1;
-    int right_node = node * 2 + 2;
-    auto a = qry(left_node, l, m, qry_l, qry_r);
-    auto b = qry(right_node, m + 1, r, qry_l, qry_r);
-    vi ret(a.size() + b.size());
-    merge(all(a), all(b), ret.begin());
-    ret.resize(min((int)ret.size(), 5));
-    return ret;
+
+    return max(left_sum + right_sum - arr[m], left_sum, right_sum);
 }
 
-void update(const int &node, const int &l, const int &r, const int &idx, const int &v)
+int maxSubArraySum(vector<int> &arr, int l, int r)
 {
+    if (l > r)
+        return INT_MIN;
     if (l == r)
-    {
-        arr[idx] = v;
-        seg[node].five[0] = v;
-        return;
-    }
-    int m = (l + r) / 2;
-    int left_node = node * 2 + 1;
-    int right_node = node * 2 + 2;
-    if (idx <= m)
-        update(left_node, l, m, idx, v);
-    else
-        update(right_node, m + 1, r, idx, v);
-    maintain(node, l, r);
-}
+        return arr[l];
 
-void build(const int &node, const int &l, const int &r)
-{
-    if (l == r)
-    {
-        seg[node].five.resize(1);
-        seg[node].five[0] = arr[l];
-        return;
-    }
     int m = (l + r) / 2;
-    int left_node = node * 2 + 1;
-    int right_node = node * 2 + 2;
-    build(left_node, l, m);
-    build(right_node, m + 1, r);
-    maintain(node, l, r);
+
+    return max(maxSubArraySum(arr, l, m - 1),
+               maxSubArraySum(arr, m + 1, r),
+               maxCrossingSum(arr, l, m, r));
 }
 
 signed main()
 {
-    ios::sync_with_stdio(0), cin.tie(0);
-    int n, q;
-    cin >> n >> q;
+    int n;
+    cin >> n;
+    vector<int> arr(n);
     for (int i = 0; i < n; ++i)
-        cin >> arr[i];
-
-    build(0, 0, n - 1);
-
-    while (q--)
     {
-        int op;
-        cin >> op;
-        if (op == 1)
-        {
-            int idx, v;
-            cin >> idx >> v;
-            update(0, 0, n - 1, idx - 1, v);
-        }
-        else
-        {
-            int l, r, k;
-            cin >> l >> r >> k;
-            auto ans = qry(0, 0, n - 1, l - 1, r - 1);
-            cout << ans[k - 1] << '\n';
-        }
+        cin >> arr[i];
     }
+
+    cout << maxSubArraySum(arr, 0, n - 1);
     return 0;
 }
