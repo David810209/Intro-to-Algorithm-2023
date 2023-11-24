@@ -4,6 +4,9 @@ typedef vector<int> vi;
 #define all(x) x.begin(), x.end()
 #define pii pair<int, int>
 // #define int long long
+
+//tioj d045 ac
+
 signed main()
 {
     ios::sync_with_stdio(0);
